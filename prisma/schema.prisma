@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model akun {
+  first_name       String
+  last_name        String
+  email            String             @unique
+  password         String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  akun_role_status akun_role_status[]
+}
+
+model akun_status {
+  id               Int                @id @default(autoincrement())
+  status           String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  akun_role_status akun_role_status[]
+}
+
+model roles {
+  id               Int                @id @default(autoincrement())
+  nama             String
+  deskripsi        String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  akun_role_status akun_role_status[]
+  role_menu        role_menu[]
+}
+
+model menus {
+  id        Int         @id @default(autoincrement())
+  nama      String
+  parent_id Int?
+  parent    menus?      @relation("MenuToParent", fields: [parent_id], references: [id], onDelete: Cascade)
+  children  menus[]     @relation("MenuToParent")
+  url       String
+  icon      String
+  order_no  Int         @default(0)
+  deskripsi String
+  role_menu role_menu[]
+}
+
+model role_menu {
+  id      Int   @id @default(autoincrement())
+  id_role Int
+  id_menu Int
+  roles   roles @relation(fields: [id_role], references: [id])
+  menus   menus @relation(fields: [id_menu], references: [id])
+}
+
+model akun_role_status {
+  id             Int         @id @default(autoincrement())
+  email          String
+  id_akun_status Int         @default(1)
+  id_role        Int
+  akun_status    akun_status @relation(fields: [id_akun_status], references: [id])
+  roles          roles       @relation(fields: [id_role], references: [id])
+  akun           akun        @relation(fields: [email], references: [email])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
